@@ -1,0 +1,48 @@
+name: CI
+
+on: [push]
+
+env:
+  REQUIRED_PHP_EXTENSIONS: ""
+
+jobs:
+  unit-tests:
+    name: "Unit Tests"
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php:
+          - "7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP with extensions"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: pcov
+          extensions: "${{ env.REQUIRED_PHP_EXTENSIONS }}"
+          php-version: "${{ matrix.php }}"
+
+      - name: "Install locked dependencies with composer"
+        run: "composer install --no-interaction --no-progress --no-suggest"
+
+      - name: "Run Unit Tests"
+        run: |
+          php \
+            -dpcov.enabled=1  \
+            -dpcov.directory="typo3/sysext/" \
+          bin/phpunit \
+            --colors \
+            --configuration vendor/typo3/testing-framework/Resources/Core/Build/UnitTests.xml \
+            --coverage-clover clover.xml
+
+      - name: "Upload Coverage"
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: clover.xml

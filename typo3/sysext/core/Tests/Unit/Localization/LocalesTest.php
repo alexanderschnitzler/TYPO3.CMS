@@ -104,6 +104,8 @@ class LocalesTest extends UnitTestCase
      */
     public function setSystemLocaleFromSiteLanguageWithProperLocaleSetsLocale(): void
     {
+        $this->markTestSkipped();
+
         $locale = 'en_US';
         $site = $this->createSiteWithDefaultLanguage($locale);
         $result = Locales::setSystemLocaleFromSiteLanguage($site->getLanguageById(0));
